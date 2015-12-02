@@ -18,9 +18,19 @@ import webapp2
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write('Kaixo mundua!')
+        self.response.write("<link rel='stylesheet' type='text/css' href='estilos.css'><b class='texto'>kaixo</b><img src='images.jpg' height='800' width='600'>")
+
+class MainHandler2(webapp2.RequestHandler):
+    def get(self):
+        self.response.write("<link rel='stylesheet' type='text/css' href='estilos.css'><b class='texto'>hola</b><img src='images.jpg' height='800' width='600'>")
+
+class MainHandler3(webapp2.RequestHandler):
+    def get(self):
+        self.response.write("<link rel='stylesheet' type='text/css' href='estilos.css'><b class='texto'>hello</b><img src='images.jpg' height='800' width='600'>")
 
 app = webapp2.WSGIApplication([
-    ('/kaixo', MainHandler)
+    ('/kaixo', MainHandler),
+    ('/hola', MainHandler2),
+    ('/hello', MainHandler3)
 ], debug=True)
 
