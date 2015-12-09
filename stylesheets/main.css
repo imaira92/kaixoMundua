@@ -1,0 +1,18 @@
+.texto {
+	color: red;
+}
+
+.etiquetas {
+	font-style: italic;
+}
+
+#titulo {
+	font-size: 24px;
+	color: blue;
+}
+
+#saludo {
+	font-size: 15px;
+	font-style: bold;
+	color: green;
+}
