@@ -17,11 +17,18 @@
 import webapp2
 import os
 import re
+from google.appengine.ext import ndb
+
+class User(ndb.Model):
+    nombre = ndb.StringProperty(required=True)
+    email = ndb.StringProperty(required=True)
+    created= ndb.DateTimeProperty(auto_now_add=True)
 
 MAIN_PAGE_HTML = """\
     <html>
     <head>
-        <link rel='stylesheet' href='stylesheets/main.css'>
+<link rel='stylesheet' href='stylesheets/main.css'>
+        <script src='scripts/jquery-1.11.3.min.js'></script>
         <script>
             function validar() {
                 var nombreBien = true;
@@ -55,14 +62,30 @@ MAIN_PAGE_HTML = """\
                     emailBien = false;
                 }
 
-                alert(nombreBien);
-                alert(passwordBien);
-                alert(passwordCoinciden);
-
                 if(nombreBien && passwordBien && passwordCoinciden && emailBien) {
                     document.getElementById('nombreSaludo').innerHTML = "<p >Kaixo: " + document.getElementById('name').value + "<p><p>Tus datos son correctos</p>";
                 }
             }
+            
+            function validarEmail(){
+                $("#errorEmail").html('Procesando...');
+                email = $("#email").val();
+                $.ajax("/comprobar",
+                        { 
+                            "type": "post",
+                            "data":{email:email},
+                            "success": function(result) {
+
+                                $("#errorEmail").html("Email sin usar");
+
+                            },
+                            "error": function(result) {
+                                $("#errorEmail").html("Email utilizado");
+                            },
+                            "async": true,
+                        }
+                )
+        }
         </script>
     </head>
       <body>
@@ -79,7 +102,7 @@ MAIN_PAGE_HTML = """\
             <input id="repeatPassword" name="repeatPassword" type="password" /> 
             <label id="errorRepetir"></label><br><br>
             <label class="etiquetas">Email: </label>
-            <input id="email" name="email" type="email" />
+            <input id="email" name="email" onChange="validarEmail()" type="email" />
             <label id="errorEmail"></label><br><br>
             <input id="Validar" name="Validar" type="button" onClick="validar()" value="Validar" />
             <input type="submit" value="Enviar a servidor" />
@@ -136,6 +159,14 @@ class Registro(webapp2.RequestHandler):
     def get(self):
         self.response.out.write(MAIN_PAGE_HTML)
 
+class Comprobar(webapp2.RequestHandler):
+    def post(self):
+        usuarios = ndb.gql("SELECT * FROM User WHERE email=:1", self.request.post('email'))
+        if usuarios.count()!=1:
+           self.response.out.write("Good")
+        else:
+           self.response.out.write("--- Email ya existente")
+
 class Validar(webapp2.RequestHandler):
     def post(self):
         nombre=self.request.get('nombre')
@@ -147,6 +178,9 @@ class Validar(webapp2.RequestHandler):
         passwordBien = True
         passwordCoinciden = True
         emailBien = True
+        todoBien = False
+
+        self.response.out.write(MAIN_PAGE_HTML)
         
         if(nombre == ""):
             self.response.out.write("Nombre incorrecto")
@@ -163,11 +197,20 @@ class Validar(webapp2.RequestHandler):
         if(email == ""):
            self.response.out.write("--- El email es incorrecto")
            emailBien = False
-        
-        self.response.out.write(MAIN_PAGE_HTML)
 
-        #if(nombreBien == True && passwordBien == True && passwordCoinciden == True && emailBien == True):
-            #self.response.out.write("<b>Buenas </b>")
+        if(nombreBien == True and passwordBien == True and passwordCoinciden == True and emailBien == True):
+            todoBien = True
+        
+        datos = User()
+        datos.nombre = self.request.get('nombre')
+        datos.email = self.request.get('email') 
+        
+        usuarios = ndb.gql("SELECT * FROM User WHERE email=:1", email)
+        if usuarios.count()!=1 and todoBien == True:
+           self.response.out.write("<b>Buenas: </b>" + nombre + ". El registro ha sido correcto.")
+           datos.put()
+        else:
+           self.response.out.write("--- Email ya existente")
 
 app = webapp2.WSGIApplication([
     ('/', Inicio),
