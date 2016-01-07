@@ -6,7 +6,7 @@ from webapp2_extras import sessions
 #Runs first in the whole application
 myconfig_dict = {}
 myconfig_dict['webapp2_extras.sessions'] = {
-    'secret_key': 'my-super-secret-key-somemorearbitarythingstosay',
+    'secret_key': '1234',
 }
 
 #Session Handling class, gets the store, dispatches the request
