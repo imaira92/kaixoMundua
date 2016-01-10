@@ -25,5 +25,5 @@ class BaseSessionHandler(webapp2.RequestHandler):
     @webapp2.cached_property
     def session(self):
         # Returns a session using the default cookie key.
-        return self.session_store.get_session()
+        return self.session_store.get_session(name=None, max_age=300, factory=None, backend='securecookie')
 #End of BaseSessionHandler Class
